@@ -1,199 +1,297 @@
-const e = document.createElement("div");
-(e.id = "jssection"), document.body.appendChild(e);
-const t = document.createElement("table");
-e.appendChild(t), e.classList.add("hide");
-const n = document.createElement("thead");
-t.appendChild(n);
-const a = document.createElement("tr");
-n.appendChild(a);
-const o = ["Osztály", "Manó", "Műszak"];
-for (const e of o) {
-  const t = document.createElement("th");
-  (t.innerText = e), a.appendChild(t);
+/**@type {HTMLDivElement} */
+const mainContainer = document.createElement("div");
+mainContainer.id = "jssection";
+mainContainer.classList.add("hide");
+document.body.appendChild(mainContainer);
+
+/** @type {HTMLTableElement} */
+const dataTable = document.createElement("table");
+mainContainer.appendChild(dataTable);
+
+/** @type {HTMLTableSectionElement} */
+const tableHead = document.createElement("thead");
+dataTable.appendChild(tableHead);
+
+/** @type {HTMLTableRowElement} */
+const headerRow = document.createElement("tr");
+tableHead.appendChild(headerRow);
+
+/** @type {string[]} */
+const columnNames = ["Osztály", "Manó", "Műszak"];
+
+for (const colName of columnNames) {
+    /**@type {HTMLTableCellElement} */
+    const headerCell = document.createElement("th");
+    headerCell.innerText = colName;
+    headerRow. appendChild(headerCell);
 }
-const l = [
-  {
-    what: "Logisztika",
-    who1: "Kovács Máté",
-    shift1: "Délelöttös",
-    who2: "Kovács József",
-    shift2: "Délutános",
-  },
-  { what: "Könyvelés", who1: "Szabó Anna", shift1: "Éjszakai" },
-  {
-    what: "Játékfejlesztés",
-    who1: "Varga Péter",
-    shift1: "Délutános",
-    who2: "Nagy Eszter",
-    shift2: "Éjszakai",
-  },
+
+/** @type {HTMLTableSectionElement} */
+const tableBody = document.createElement("tbody");
+tableBody.id = "jstbody";
+dataTable.appendChild(tableBody);
+
+/**@typedef {what: string, who1: string, shift1: string, who2?: string, shift2?: string} Elf */
+
+/** @type {Elf[]} */
+const elfData = [
+    {
+        what: "Logisztika",
+        who1: "Kovács Máté",
+        shift1: "Délelőttös",
+        who2: "Kovács József",
+        shift2: "Délutános"
+    },
+    {
+        what: "Könyvelés",
+        who1: "Szabó Anna",
+        shift1: "Éjszakai"
+    }
 ];
-initSelect(l);
-const d = document.createElement("tbody");
-function renderTbody(e) {
-  const t = document.getElementById("jstbody");
-  t.innerHTML = "";
-  for (const n of e) {
-    const e = document.createElement("tr");
-    t.appendChild(e);
-    const a = document.createElement("td");
-    (a.innerText = n.what), e.appendChild(a);
-    const o = document.createElement("td");
-    (o.innerText = n.who1), e.appendChild(o);
-    const l = document.createElement("td");
-    if (((l.innerText = n.shift1), e.appendChild(l), n.who2 && n.shift2)) {
-      a.rowSpan = 2;
-      const e = document.createElement("tr");
-      t.appendChild(e);
-      const o = document.createElement("td");
-      (o.innerText = n.who2), e.appendChild(o);
-      const l = document.createElement("td");
-      (l.innerText = n.shift2), e.appendChild(l);
+
+/**
+ * @param {string} fieldValue 
+ * @returns {boolean}
+ */
+function validate(fieldValue) {
+    let valid = true;
+    if(fieldValue == '') {
+        const parentDiv = fieldValue.parentElement;
+        const errorSpan = parentDiv.querySelector('.error');
+        errorSpan.innerText = "Ez a mező kötelező! ";
+        valid = false;
     }
-  }
+    return valid
 }
-(d.id = "jstbody"), t.appendChild(d), renderTbody(l);
-const c = undefined,
-  i = s([
-    { id: "osztaly", label: "Osztály", name: "osztaly" },
-    { id: "mano1", label: "Manó 1", name: "mano1" },
-    {
-      id: "muszak1",
-      label: "Manó 1 műszak",
-      name: "muszak1",
-      type: "select",
-      optionList: [
-        { value: "1", label: "Délelöttös" },
-        { value: "2", label: "Délutános" },
-        { value: "3", label: "Éjszakai" },
-      ],
-    },
-    {
-      id: "masodikmano",
-      label: "Két manót veszek fel",
-      name: "masodikmano",
-      type: "checkbox",
-    },
-    { id: "mano2", label: "Manó 2", name: "mano2" },
-    {
-      id: "muszak2",
-      label: "Manó 2 műszak",
-      name: "muszak2",
-      type: "select",
-      optionList: [
-        { value: "1", label: "Délelöttös" },
-        { value: "2", label: "Délutános" },
-        { value: "3", label: "Éjszakai" },
-      ],
-    },
-  ]);
-function s(e) {
-  const t = document.createElement("form");
-  t.id = "jsform";
-  for (const n of e) m(n, t);
-  const n = document.createElement("button");
-  return (n.innerText = "Hozzaadas"), t.appendChild(n), t;
-}
-function m(e, t) {
-  const n = document.createElement("div");
-  if ((t.appendChild(n), e.type && "select" != e.type)) {
-    if ("checkbox" == e.type) {
-      const t = document.createElement("input");
-      (t.id = e.id), (t.name = e.name), (t.type = "checkbox"), n.appendChild(t);
-      const a = document.createElement("label");
-      (a.innerText = e.label), (a.htmlFor = e.id), n.appendChild(a);
+
+/**
+ * @param {string} identifier 
+ * @param {string} labelText 
+ * @returns {void}
+*/
+function createSelect(identifier, labelText) {
+    const container = document.createElement("div");
+
+    const labelElem = document.createElement("label");
+    labelElem.innerText = labelText;
+    labelElem.htmlFor = identifier;
+    container.appendChild(labelElem);
+
+    const selectElem = document.createElement("select");
+    selectElem.id = identifier;
+
+    const emptyOption = document.createElement("option");
+    emptyOption.value = "";
+    emptyOption. innerText = "Válassz műszakot!";
+    selectElem.appendChild(emptyOption);
+
+    const shiftOptions = [
+        { value: "1", text: "Délelőttös" },
+        { value: "2", text: "Délutános" },
+        { value: "3", text: "Éjszakai" }
+    ];
+
+    for (let idx = 0; idx < shiftOptions.length; idx++) {
+        const opt = document.createElement("option");
+        opt.value = shiftOptions[idx].value;
+        opt.innerText = shiftOptions[idx].text;
+        selectElem.appendChild(opt);
     }
-  } else {
-    const t = document.createElement("label");
-    if (
-      ((t.innerText = e.label),
-      (t.htmlFor = e.id),
-      n.appendChild(t),
-      n.appendChild(document.createElement("br")),
-      e.type)
-    ) {
-      if ("select" === e.type) {
-        const t = document.createElement("select");
-        (t.id = e.id), n.appendChild(t);
-        const a = document.createElement("option");
-        (a.innerText = "Válassz műszakot!"), (a.value = ""), t.appendChild(a);
-        for (const n of e.optionList) {
-          const e = document.createElement("option");
-          (e.innerText = n.label), (e.value = n.value), t.appendChild(e);
+
+    container.appendChild(selectElem);
+
+    const errorSpan = document.createElement("span");
+    errorSpan.classList. add("error");
+    container.appendChild(errorSpan);
+
+    dynamicForm.appendChild(container);
+}
+
+/**
+ * @param {string} identifier 
+ * @param {string} labelText
+ * @returns {void} 
+ */
+function createInput(identifier, labelText) {
+    const container = document.createElement("div");
+    dynamicForm.appendChild(container);
+
+    const labelElem = document.createElement("label");
+    labelElem.innerText = labelText;
+    labelElem. htmlFor = identifier;
+    container.appendChild(labelElem);
+
+    const inputElem = document. createElement("input");
+    inputElem.id = identifier;
+    inputElem.name = identifier;
+    container.appendChild(inputElem);
+
+    const errorSpan = document.createElement("span");
+    errorSpan.classList.add("error");
+    container.appendChild(errorSpan);
+}
+
+/**
+ * @param {Elf} dataArray 
+ * @returns {void}
+*/
+function renderTbody(dataArray) {
+    tableBody.innerHTML = "";
+
+    for (let idx = 0; idx < dataArray.length; idx++) {
+        const firstRow = document.createElement("tr");
+        tableBody.appendChild(firstRow);
+
+        const departmentCell = document.createElement("td");
+        departmentCell.innerText = dataArray[idx].what;
+        firstRow.appendChild(departmentCell);
+
+        const firstElfCell = document.createElement("td");
+        firstElfCell. innerText = dataArray[idx]. who1;
+        firstRow. appendChild(firstElfCell);
+
+        const firstShiftCell = document.createElement("td");
+        firstShiftCell.innerText = dataArray[idx].shift1;
+        firstRow.appendChild(firstShiftCell);
+
+        if (dataArray[idx].who2 && dataArray[idx].shift2) {
+            departmentCell.rowSpan = 2;
+
+            const secondRow = document.createElement("tr");
+            tableBody.appendChild(secondRow);
+
+            const secondElfCell = document.createElement("td");
+            secondElfCell.innerText = dataArray[idx].who2;
+            secondRow.appendChild(secondElfCell);
+
+            const secondShiftCell = document.createElement("td");
+            secondShiftCell.innerText = dataArray[idx].shift2;
+            secondRow.appendChild(secondShiftCell);
         }
-      }
-    } else {
-      const t = document.createElement("input");
-      (t.id = e.id),
-        (t.name = e.name),
-        n.appendChild(t),
-        n.appendChild(document.createElement("br"));
     }
-  }
-  const a = document.createElement("span");
-  a.classList.add("error"), n.appendChild(a);
 }
-function r(e) {
-  let t = !0;
-  if ("" == e.value) {
-    const n = undefined;
-    (e.parentElement.querySelector(".error").innerText = "Kötelező elem!"),
-      (t = !1);
-  }
-  return t;
-}
-(i.id = "jsform"),
-  e.appendChild(i),
-  i.addEventListener("submit", function (e) {
-    e.preventDefault();
-    const t = e.target,
-      n = t.querySelector("#osztaly"),
-      a = t.querySelector("#mano1"),
-      o = t.querySelector("#muszak1"),
-      d = t.querySelector("#mano2"),
-      c = t.querySelector("#muszak2"),
-      i = t.querySelector("#masodikmano"),
-      s = n.value,
-      m = a.value,
-      u = o.value,
-      h = d.value,
-      f = c.value;
-    p(t);
-    const E = undefined;
-    if (r(n) & r(a) & r(o)) {
-      const e = {};
-      (e.what = s),
-        (e.who1 = m),
-        (e.shift1 = mapMuszak(u)),
-        i.checked && ((e.who2 = h), (e.shift2 = mapMuszak(f))),
-        createNewElement(e, t, l);
+
+/**@type {HTMLFormElement} */
+const dynamicForm = document.createElement("form");
+dynamicForm.id = "jsform";
+mainContainer.appendChild(dynamicForm);
+
+createInput("osztaly", "Osztály");
+createInput("mano1", "Manó 1");
+createSelect("muszak1", "Manó 1 műszak");
+
+/** @type {HTMLDivElement} */
+const checkboxContainer = document.createElement("div");
+
+/** @type {HTMLInputElement} */
+const secondElfCheckbox = document.createElement("input");
+secondElfCheckbox.type = "checkbox";
+secondElfCheckbox.id = "masodikmano";
+checkboxContainer.appendChild(secondElfCheckbox);
+
+/** @type {HTMLLabelElement} */
+const checkboxLabel = document.createElement("label");
+checkboxLabel.innerText = "Két manót veszek fel";
+checkboxLabel. htmlFor = "masodikmano";
+checkboxContainer.appendChild(checkboxLabel);
+
+dynamicForm.appendChild(checkboxContainer);
+
+createInput("mano2", "Manó 2");
+createSelect("muszak2", "Manó 2 műszak");
+
+const submitBtn = document.createElement("button");
+submitBtn.innerText = "Hozzáadás";
+dynamicForm.appendChild(submitBtn);
+
+initCheckbox(secondElfCheckbox);
+
+dynamicForm.addEventListener("submit", handleJSForm);
+
+renderTbody(elfData);
+initSelect(elfData);
+
+/**
+ * @param {Event} event 
+ */
+function handleJSForm(event) {
+    event.preventDefault();
+
+    /** @type {HTMLInputElement} */
+    const departmentInput = dynamicForm.querySelector("#osztaly");
+    /** @type {HTMLInputElement} */
+    const firstElfInput = dynamicForm.querySelector("#mano1");
+    /** @type {HTMLSelectElement} */
+    const firstShiftSelect = dynamicForm.querySelector("#muszak1");
+    /** @type {HTMLInputElement} */
+    const secondElfInput = dynamicForm.querySelector("#mano2");
+    /** @type {HTMLSelectElement} */
+    const secondShiftSelect = dynamicForm.querySelector("#muszak2");
+    /** @type {HTMLInputElement} */
+    const hasSecondElf = dynamicForm.querySelector("#masodikmano");
+
+    if (validate(departmentInput. value) & validate(firstElfInput.value) & validate(firstShiftSelect.value)) {
+        /** @type {Elf} */
+        const newEntry = {
+            what: departmentInput.value,
+            who1: firstElfInput.value,
+            shift1: mapMuszak(firstShiftSelect.value)
+        };
+
+        if (hasSecondElf. checked) {
+            newEntry. who2 = secondElfInput.value;
+            newEntry. shift2 = mapMuszak(secondShiftSelect.value);
+        }
+
+        createNewElement(newEntry, dynamicForm, elfData);
     }
-  });
-const u = undefined;
-function p(e) {
-  const t = e.querySelectorAll(".error");
-  for (const e of t) e.innerText = "";
 }
-document.getElementById("htmlform").addEventListener("submit", function (e) {
-  e.preventDefault();
-  const t = e.target,
-    n = t.querySelector("#manochooser"),
-    a = t.querySelector("#manotev1"),
-    o = t.querySelector("#manotev2");
-  p(t);
-  const l = undefined;
-  if (r(n) & r(a)) {
-    const e = document.getElementById("htmltbody"),
-      l = document.createElement("tr");
-    e.appendChild(l);
-    const d = document.createElement("td");
-    (d.innerText = n.value), l.appendChild(d);
-    const c = document.createElement("td");
-    if (((c.innerText = a.value), l.appendChild(c), o.value)) {
-      const e = document.createElement("td");
-      (e.innerText = o.value), l.appendChild(e);
-    } else c.colSpan = 2;
-    t.reset();
-  }
-}),
-  initCheckbox(document.getElementById("jsform").querySelector("#masodikmano"));
+
+const staticForm = document.getElementById("htmlform");
+staticForm.addEventListener("submit", handleHTMLForm);
+
+/**
+ * @param {Event} event
+ */
+function handleHTMLForm(event) {
+    event.preventDefault();
+
+    /** @type {HTMLFormElement} */
+    const formElement = event.target;
+    
+    for (const errorElement of formElement.querySelectorAll(".error")) {
+        errorElement.innerText = "";
+    }
+
+    /** @type {HTMLSelectElement} */
+    const elfSelector = formElement.querySelector("#manochooser");
+    /** @type {HTMLInputElement} */
+    const firstTask = formElement.querySelector("#manotev1");
+    /** @type {HTMLInputElement} */
+    const secondTask = formElement.querySelector("#manotev2");
+
+    if (validate(elfSelector.value) & validate(firstTask.value)) {
+        const htmlTableBody = document.getElementById("htmltbody");
+
+        const newRow = document.createElement("tr");
+
+        const cell1 = document.createElement("td");
+        cell1.innerText = elfSelector.value;
+        newRow.appendChild(cell1);
+
+        const cell2 = document.createElement("td");
+        cell2.innerText = firstTask. value;
+        newRow.appendChild(cell2);
+
+        if (secondTask.value) {
+            const cell3 = document.createElement("td");
+            cell3.innerText = secondTask.value;
+            newRow.appendChild(cell3);
+        } else {
+            cell2.colSpan = 2;
+        }
+
+        htmlTableBody.appendChild(newRow);
+        formElement.reset();
+    }
+}
